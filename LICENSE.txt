@@ -1,0 +1,29 @@
+Citadel PBO Tools
+Copyright (c) Citadel. All rights reserved.
+
+This software is the internal property of Citadel and is licensed for use by
+Citadel personnel and authorized partners only.
+
+Permitted use:
+  - Use within the scope of Citadel's DayZ modding, mapping, and addon
+    development work.
+  - Use by Citadel team members and authorized contributors on their own
+    workstations and approved infrastructure.
+
+Restrictions:
+  - You may not resell, rent, sublicense, publicly distribute, or republish
+    this software or its source code without prior written permission from
+    Citadel leadership.
+  - You may not modify, decompile, reverse engineer, or extract portions of
+    this software for use in unrelated commercial products without prior
+    written permission.
+
+No warranty:
+  - This software is provided "as-is" without warranty of any kind, express
+    or implied, including but not limited to the warranties of merchantability,
+    fitness for a particular purpose, and noninfringement.
+  - In no event shall Citadel or the authors be liable for any claim, damages,
+    lost data, broken signatures, leaked keys, failed builds, or other
+    liability arising from the use of this software.
+
+By using Citadel PBO Tools you agree to the terms above.

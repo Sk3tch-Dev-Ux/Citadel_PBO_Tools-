@@ -1,0 +1,8 @@
+# Runtime dependencies for Citadel PBO Tools
+# Tkinter ships with the Python standard library on Windows and does not need to be listed here.
+
+# Drag-and-drop support for the Inspector (PBO drop into window)
+tkinterdnd2>=0.4.0
+
+# PyInstaller is required for building EXEs from source; pinned to a known-good major version
+pyinstaller>=6.0

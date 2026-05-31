@@ -1,0 +1,100 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write   # required to create GitHub Releases and upload assets
+
+jobs:
+  build-windows:
+    name: Build Windows EXEs
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Run tests before release
+        run: python -m pytest -v --tb=short
+
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          $v = (python -c "from citadel_version import VERSION_STRING; print(VERSION_STRING)").Trim()
+          $cleanV = ($v -replace '\s+', '_')
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "clean=$cleanV" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build Citadel PBO Builder
+        run: .\scripts\build_citadel_pbo_builder.ps1
+
+      - name: Build Citadel PBO Inspector
+        run: .\scripts\build_citadel_pbo_inspector.ps1
+
+      - name: Stage release files
+        shell: pwsh
+        run: |
+          $releaseDir = "release_staging"
+          New-Item -ItemType Directory -Path $releaseDir | Out-Null
+          Copy-Item dist\Citadel_PBO_Builder.exe $releaseDir
+          Copy-Item dist\Citadel_PBO_Inspector.exe $releaseDir
+          Copy-Item README.md $releaseDir
+          Copy-Item CHANGELOG.md $releaseDir
+          Copy-Item LICENSE.txt $releaseDir
+          $hashLines = Get-ChildItem $releaseDir -File | ForEach-Object {
+            "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash)  $($_.Name)"
+          }
+          $hashLines | Out-File -FilePath "$releaseDir\SHA256SUMS.txt" -Encoding utf8
+          $zipName = "Citadel_PBO_Tools_${{ steps.version.outputs.clean }}.zip"
+          Compress-Archive -Path "$releaseDir\*" -DestinationPath $zipName
+          "zip=$zipName" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Upload built artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: citadel-pbo-tools-${{ steps.version.outputs.clean }}
+          path: |
+            dist/Citadel_PBO_Builder.exe
+            dist/Citadel_PBO_Inspector.exe
+            ${{ env.zip }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Citadel PBO Tools ${{ github.ref_name }}
+          body: |
+            Citadel PBO Tools ${{ steps.version.outputs.version }}
+
+            See [`CHANGELOG.md`](CHANGELOG.md) for the full feature list and
+            change history.
+
+            ## Downloads
+            - `Citadel_PBO_Builder.exe` — pack/binarize/sign DayZ addon PBOs
+            - `Citadel_PBO_Inspector.exe` — inspect and extract existing PBOs
+            - `Citadel_PBO_Tools_*.zip` — both EXEs plus docs and SHA-256 checksums
+
+            ## Verifying downloads
+            ```powershell
+            Get-FileHash Citadel_PBO_Builder.exe -Algorithm SHA256
+            Get-FileHash Citadel_PBO_Inspector.exe -Algorithm SHA256
+            ```
+            Match the result against `SHA256SUMS.txt` in the zip.
+          files: |
+            dist/Citadel_PBO_Builder.exe
+            dist/Citadel_PBO_Inspector.exe
+            ${{ env.zip }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'rc') }}

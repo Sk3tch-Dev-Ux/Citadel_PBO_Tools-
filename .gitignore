@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# PyInstaller
+build/
+dist/
+*.spec
+*.spec.bak
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# Build / release artifacts
+releases/
+*.zip
+
+# Built EXEs (committed via GitHub Releases instead)
+*.exe
+
+# Logs and local debug
+*.log
+launch_debug.log
+builder_launch.log
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Sensitive — never commit these
+*.biprivatekey
+*.bisign
+local_settings.json
